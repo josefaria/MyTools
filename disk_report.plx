@@ -56,7 +56,7 @@ my $copyright2='Portugal';
 my $host = hostfqdn();
 my $report_hour='';
 my @month=qw.January February March April May June July August September October November December.;
-my @dayofweek=qw.Sunday Monday Tueday Wednesday Thurday Friday Saturday Sunday.;
+my @dayofweek=qw.Sunday Monday Tuesday Wednesday Thurday Friday Saturday Sunday.;
 # variaveis a usar na TAREFA 1
 my $comando='';
 my @parcelas=();
