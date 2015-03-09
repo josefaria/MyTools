@@ -1,67 +1,41 @@
 #!/usr/bin/perl
-## -----------------------------------------------------------------------------------------
-##
-## dr - Disk Report
-##
-##  purpose: Search partions on machine and generate a report with total/free/occupied space for each partition.
-##           This report is sent by email.
-##
-##  version: 0.1 (2014)
-##
-##  Jose Luis Faria, jose@di.uminho.pt,joseluisfaria@gmail.com
-##  Universidade do Minho, Braga, Portugal
-##
-##
-## -----------------------------------------------------------------------------------------
-
 use strict;
 use warnings;
 use Net::Domain qw(hostname hostfqdn hostdomain);
 
+# ---------------------------------------------------------------------------------------
+# esta script faz o levantamento de varios estados do sistema e envia um relatorio
+# 
 
-## -----------------------------------------------------------------------------------------
-##
-##  definitions all here!
-##
-## -----------------------------------------------------------------------------------------
-
-# email to and from
-my $email_from="tecnicos\@di.uminho.pt";
-my $email_to="jose\@di.uminho.pt,aaragao\@di.uminho.pt";
-my $search_patern="[^/dev/|^/mnt/]";
-
-# treshold alarm 90%
-my $treshold=90;
-#
-
-
-## -----------------------------------------------------------------------------------------
-##
-##                      stop your definitions here !
-##
-## -----------------------------------------------------------------------------------------
-
-
-
-
-## -----------------------------------------------------------------------------------------
-##
-##                      let's work!
-##
-## -----------------------------------------------------------------------------------------
-
-my $version='0.1';
+# my version
+my $version='1.0';
 my $copyright1='Universidade do Minho - Braga';
 my $copyright2='Portugal';
-my $host = hostfqdn();
-my $report_hour='';
-my @month=qw.January February March April May June July August September October November December.;
-my @dayofweek=qw.Sunday Monday Tuesday Wednesday Thurday Friday Saturday Sunday.;
+
+# email a quem enviar o relatorio
+my $email_origem="tecnicos\@di.uminho.pt";
+my $email_destino="jose\@di.uminho.pt,aaragao\@di.uminho.pt";
+#my $email_destino="jose\@di.uminho.pt";
+my $maquina = hostfqdn();
+my $hora='';
+
+
+#
+my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
+$hora=sprintf("%02d:%02d",$hour,$min);
+$year += 1900;
+$mon += 1;
+my @meses=qw.January February March April May June July August September October November December.;
+
+
 # variaveis a usar na TAREFA 1
+my $padrao_pesquisa="[^/dev/|^/mnt/]";
+#my $padrao_pesquisa="^/dev/";
 my $comando='';
+my $treshold=90;
 my @parcelas=();
 my $percentagem = 0;
-my $mensagem = "<hr><h4>report disk</h4>\n<hr>\n";
+my $mensagem = "<hr><h4>relatório sobre partições no disco</h4>\n<hr>\n";
 my $mensagem_parte = "";
 my $num_parcelas=0;
 my $indice=0;
@@ -75,10 +49,10 @@ my $i=0;
 
 # TAREFA 1
 # fazer levantamento do estado do disco
-$comando="df -Ph | grep \"$search_patern\" |";
+$comando="df -Ph | grep \"$padrao_pesquisa\" |";
 open(DSK,$comando);
 $mensagem .= "<table class=\"report\">\n";
-$mensagem .= "<tr><th>partition</th><th>space</th><th>used</th><th>% used</th><th>% alarm</th><th>free</th><th>path</th></tr>\n";
+$mensagem .= "<tr><th>partição</th><th>espaço</th><th>ocupa</th><th>% ocupa</th><th>% alarme</th><th>livre</th><th>caminho</th></tr>\n";
 while (<DSK>) {
 	if ($_ =~ /Size  Used Avail/) {
 		next;
@@ -103,7 +77,7 @@ while (<DSK>) {
 	}
 
 	if (($treshold-$ocupa_percentagem)<=10) {
-		$mensagem_parte .="<tr class=\"alarm\">\n";
+		$mensagem_parte .="<tr class=\"prealarm\">\n";
 		$mensagem_parte .= "<td><b>$particao</b></td><td align=\"right\"><b>$espaco</b></td><td align=\"right\"><b>$ocupa</b></td><td align=\"right\"><b>$ocupa_percentagem%</b></td><td align=\"right\"><b><blink>$treshold%</blink></b></td><td align=\"right\"><b>$livre</b></td><td><b>$caminho</b></td></tr>\n";
 	} elsif ($ocupa_percentagem>=$treshold) {
 		$mensagem_parte .="<tr class=\"alarm\">\n";
@@ -117,24 +91,15 @@ $mensagem .= "" . $mensagem_parte;
 $mensagem .= "</table>\n";
 
 #
-# prepare report to send
+# preparar relatorio e enviar
 #
 # ---------------------------------------------------------------------------------------------------
-
-my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
-$year += 1900;
-$min =sprintf("%02d",$min);
-$hour =sprintf("%02d",$hour);
-$mday =sprintf("%02d",$mday);
-$mon =sprintf("%02d",$mon);
-
-my $subject="Disk Report on ($dayofweek[$wday]) $month[$mon] $mday, $year at $hour:$min";
-
+my $subject="Relatório da máquina $maquina no dia $year/$mon/$mday às $hora";
 open(MAIL,"|/usr/sbin/sendmail -t");
 
 ## Mail Header
-print MAIL "To: $email_to\n";
-print MAIL "From: $email_from\n";
+print MAIL "To: $email_destino\n";
+print MAIL "From: $email_origem\n";
 print MAIL "Subject: $subject\n";
 print MAIL "Content-Type: text/html; charset=ISO-utf8\n\n";
 ## Mail Body
@@ -153,11 +118,11 @@ print MAIL "}\n";
 print MAIL "table.report td {\n";
 print MAIL "  border: 1px solid #5F5A59;\n";
 print MAIL "}\n";
-print MAIL "table.report tr.prealarm {\n";
-print MAIL "  background-color: #CCFF00;\n";
-print MAIL "}\n";
 print MAIL "table.report td.alarm {\n";
 print MAIL "	color: #FFFFFF;\n";
+print MAIL "}\n";
+print MAIL "table.report tr.prealarm {\n";
+print MAIL "  background-color: #CCFF00;\n";
 print MAIL "}\n";
 print MAIL "table.report tr.alarm {\n";
 print MAIL "  background-color: #F88017;\n";
@@ -166,16 +131,25 @@ print MAIL "</style>\n\n";
 print MAIL "</head><body>\n";
 
 # cabecalho da mensagem
-print MAIL "<h3>Disk Report : $host</h3>";
+print MAIL "<h3>Relatório Global da Máquina $maquina</h3>";
+print MAIL "<h4>Data e hora: $year/$mon/$mday às $hora</h4>\n";
 
 # corpo da mensagem
 print MAIL $mensagem;
 
-# message foot
+# rodape da mensagem
 print MAIL "<br><br><br>\n";
+print MAIL "<hr>\n";
+print MAIL "Equipa de Administração de Sistemas<br>\n";
+print MAIL "Universidade do Minho<br>\n";
+print MAIL "Escola de Engenharia<br>\n";
+print MAIL "Departamento de Informática<br>\n";
+print MAIL "Campus de Gualtar<br>\n";
+print MAIL "4710-057 Braga<br>\n";
+print MAIL "<br><br>\n";
 print MAIL "<hr>\n";
 print MAIL "dr-Disk Report v. $version<br>\n";
 print MAIL "&copy; $copyright1<br>\n";
 print MAIL "$copyright2<br>\n";
 print MAIL "\n</body>\n</html>\n";
-close(MAIL);
+close(MAIL)
