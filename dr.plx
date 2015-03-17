@@ -8,7 +8,7 @@ use Net::Domain qw(hostname hostfqdn hostdomain);
 # 
 
 # my version
-my $version='1.0.1';
+my $version='1.0.2';
 my $copyright1='Universidade do Minho - Braga';
 my $copyright2='Portugal';
 
@@ -77,14 +77,14 @@ while (<DSK>) {
 		$particao = $particao . $parcelas[$i];
 	}
 	if ($ocupa_percentagem>=$treshold) {
-		if ($flag_attention<1) {
-			$flag_attention=1;
+		if ($flag_attention<2) {
+			$flag_attention=2;
 		}
 		$mensagem_parte .="<tr class=\"alarm\">\n";
 		$mensagem_parte .= "<td><b>$particao</b></td><td align=\"right\"><b>$espaco</b></td><td align=\"right\"><b>$ocupa</b></td><td align=\"right\"><b>$ocupa_percentagem%</b></td><td align=\"right\"><b><blink>$treshold%</blink></b></td><td align=\"right\"><b>$livre</b></td><td><b>$caminho</b></td></tr>\n";
 	} elsif (($treshold-$ocupa_percentagem)<=10) {
-		if ($flag_attention<2) {
-			$flag_attention=2;
+		if ($flag_attention<1) {
+			$flag_attention=1;
 		}
 		$mensagem_parte .="<tr class=\"prealarm\">\n";
 		$mensagem_parte .= "<td><b>$particao</b></td><td align=\"right\"><b>$espaco</b></td><td align=\"right\"><b>$ocupa</b></td><td align=\"right\"><b>$ocupa_percentagem%</b></td><td align=\"right\"><b><blink>$treshold%</blink></b></td><td align=\"right\"><b>$livre</b></td><td><b>$caminho</b></td></tr>\n";

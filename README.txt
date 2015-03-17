@@ -8,9 +8,13 @@
 ##  dr - Disk Report (2014-12-15)
 ##
 ##  purpose: Search for partitions on machine and produce a report with total/free/occupied space for each partition.
+##           For each partions show Orange: watchout, Yellow: warning, White: its OK.
 ##           This report is sent by email.
 ##
 ##  version: 0.1 (2014)
+##  version: 1.0.1 (2015)
+##  version: 1.0.2 (2015)
+##              - add message "OK, Warning or Wathout" in email subject
 ##
 ##
 ##
